@@ -14,51 +14,26 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from app import create_app, db
 from app.models import User, Restaurant, Review
 
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
 config = context.config
 
-# Исправление пути к alembic.ini - ищем в корневой директории проекта
 root_dir = os.path.dirname(os.path.dirname(__file__))
 alembic_ini_path = os.path.join(root_dir, 'alembic.ini')
 
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
 if os.path.exists(alembic_ini_path):
     fileConfig(alembic_ini_path)
 else:
-    # Fallback на стандартное поведение, если файл не найден
     try:
         fileConfig(config.config_file_name)
     except Exception as e:
         print(f"Предупреждение: Не удалось загрузить конфигурацию логирования: {e}")
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
 app = create_app()
 config.set_main_option('sqlalchemy.url', app.config['SQLALCHEMY_DATABASE_URI'])
 target_metadata = db.metadata
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
-
 
 def run_migrations_offline():
-    """Run migrations in 'offline' mode.
-
-    This configures the context with just a URL
-    and not an Engine, though an Engine is acceptable
-    here as well.  By skipping the Engine creation
-    we don't even need a DBAPI to be available.
-
-    Calls to context.execute() here emit the given string to the
-    script output.
-
-    """
+    """Запуск миграций в 'offline' режиме без подключения к БД."""
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -72,12 +47,7 @@ def run_migrations_offline():
 
 
 def run_migrations_online():
-    """Run migrations in 'online' mode.
-
-    In this scenario we need to create an Engine
-    and associate a connection with the context.
-
-    """
+    """Запуск миграций в 'online' режиме с подключением к БД."""
     connectable = engine_from_config(
         config.get_section(config.config_ini_section),
         prefix="sqlalchemy.",
