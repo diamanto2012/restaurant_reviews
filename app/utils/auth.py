@@ -12,7 +12,7 @@ def admin_required():
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
             user_id = get_jwt_identity()
-            user = User.query.get(user_id)
+            user = User.query.get(int(user_id))
             
             if not user or user.role != UserRole.ADMIN.value:
                 return jsonify({"message": "Доступ запрещен. Требуются права администратора."}), 403
@@ -28,7 +28,7 @@ def get_current_user():
     try:
         verify_jwt_in_request()
         user_id = get_jwt_identity()
-        return User.query.get(user_id)
+        return User.query.get(int(user_id))
     except:
         return None
 
@@ -41,11 +41,9 @@ def user_can_view_user(user_id):
     if not current_user:
         return False
     
-    # Администратор может просматривать информацию о любом пользователе
     if current_user.is_admin():
         return True
     
-    # Респондент может просматривать только свою информацию
     return current_user.id == user_id
 
 def user_can_view_review(review):
@@ -57,9 +55,7 @@ def user_can_view_review(review):
     if not current_user:
         return False
     
-    # Администратор может просматривать любой отзыв
     if current_user.is_admin():
         return True
     
-    # Респондент может просматривать только свои отзывы
     return current_user.id == review.user_id

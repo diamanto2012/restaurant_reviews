@@ -13,25 +13,20 @@ def register():
     """
     data = request.get_json()
     
-    # Проверка наличия обязательных полей
     if not all(k in data for k in ('username', 'email', 'password')):
         return jsonify({'message': 'Отсутствуют обязательные поля'}), 400
     
-    # Проверка уникальности имени пользователя
     if User.query.filter_by(username=data['username']).first():
         return jsonify({'message': 'Пользователь с таким именем уже существует'}), 400
     
-    # Проверка валидности email
     try:
         validate_email(data['email'])
     except EmailNotValidError:
         return jsonify({'message': 'Некорректный email'}), 400
     
-    # Проверка уникальности email
     if User.query.filter_by(email=data['email']).first():
         return jsonify({'message': 'Пользователь с таким email уже существует'}), 400
     
-    # Создание нового пользователя
     user = User(
         username=data['username'],
         email=data['email'],
@@ -51,19 +46,15 @@ def login():
     """
     data = request.get_json()
     
-    # Проверка наличия обязательных полей
     if not all(k in data for k in ('username', 'password')):
         return jsonify({'message': 'Отсутствуют обязательные поля'}), 400
     
-    # Поиск пользователя
     user = User.query.filter_by(username=data['username']).first()
     
-    # Проверка пароля
     if not user or not user.check_password(data['password']):
         return jsonify({'message': 'Неверное имя пользователя или пароль'}), 401
     
-    # Создание JWT токена
-    access_token = create_access_token(identity=user.id)
+    access_token = create_access_token(identity=str(user.id))
     
     return jsonify({
         'access_token': access_token,

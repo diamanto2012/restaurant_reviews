@@ -18,7 +18,6 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Отношение с отзывами
     reviews = db.relationship('Review', back_populates='user', cascade='all, delete-orphan')
     
     def __init__(self, username, email, password, role=UserRole.RESPONDENT.value):

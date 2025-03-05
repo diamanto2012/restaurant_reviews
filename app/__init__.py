@@ -6,10 +6,8 @@ from flask_jwt_extended import JWTManager
 from flask_swagger_ui import get_swaggerui_blueprint
 from dotenv import load_dotenv
 
-# Загрузка переменных окружения из .env файла
 load_dotenv()
 
-# Инициализация расширений
 db = SQLAlchemy()
 migrate = Migrate()
 jwt = JWTManager()
@@ -17,13 +15,11 @@ jwt = JWTManager()
 def create_app(config_class=None):
     app = Flask(__name__)
     
-    # Конфигурация приложения
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-secret-key')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI', 'sqlite:///restaurant_reviews.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'default-jwt-secret-key')
     
-    # Инициализация расширений с приложением
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
@@ -51,10 +47,8 @@ def create_app(config_class=None):
     app.register_blueprint(restaurants_bp, url_prefix='/api/v1/restaurants')
     app.register_blueprint(reviews_bp, url_prefix='/api/v1/reviews')
     
-    # Создание директории для статических файлов, если она не существует
     os.makedirs(os.path.join(app.root_path, 'static'), exist_ok=True)
     
-    # Создание Swagger спецификации
     from app.utils.swagger import generate_swagger_spec
     with app.app_context():
         generate_swagger_spec(app)

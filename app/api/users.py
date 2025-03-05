@@ -47,10 +47,6 @@ def create_user():
     if not all(k in data for k in ('username', 'email', 'password', 'role')):
         return jsonify({'message': 'Отсутствуют обязательные поля'}), 400
     
-    # Проверка роли
-    if data['role'] not in [UserRole.ADMIN.value, UserRole.RESPONDENT.value]:
-        return jsonify({'message': 'Некорректная роль'}), 400
-    
     # Проверка уникальности имени пользователя
     if User.query.filter_by(username=data['username']).first():
         return jsonify({'message': 'Пользователь с таким именем уже существует'}), 400
@@ -64,6 +60,10 @@ def create_user():
     # Проверка уникальности email
     if User.query.filter_by(email=data['email']).first():
         return jsonify({'message': 'Пользователь с таким email уже существует'}), 400
+    
+    # Проверка валидности роли
+    if data['role'] not in [role.value for role in UserRole]:
+        return jsonify({'message': 'Некорректная роль'}), 400
     
     # Создание нового пользователя
     user = User(
@@ -84,8 +84,9 @@ def update_user(user_id):
     """
     Обновление данных пользователя (только для администраторов)
     """
-    # Поиск пользователя
     user = User.query.get(user_id)
+    
+    # Проверка, что пользователь существует
     if not user:
         return jsonify({'message': 'Пользователь не найден'}), 404
     
@@ -119,7 +120,8 @@ def update_user(user_id):
     
     # Обновление роли
     if 'role' in data:
-        if data['role'] not in [UserRole.ADMIN.value, UserRole.RESPONDENT.value]:
+        # Проверка валидности роли
+        if data['role'] not in [role.value for role in UserRole]:
             return jsonify({'message': 'Некорректная роль'}), 400
         user.role = data['role']
     
@@ -133,17 +135,18 @@ def delete_user(user_id):
     """
     Удаление пользователя (только для администраторов)
     """
-    # Поиск пользователя
     user = User.query.get(user_id)
+    
+    # Проверка, что пользователь существует
     if not user:
         return jsonify({'message': 'Пользователь не найден'}), 404
     
-    # Проверка, что пользователь не удаляет сам себя
-    current_user_id = get_jwt_identity()
-    if user_id == current_user_id:
-        return jsonify({'message': 'Невозможно удалить текущего пользователя'}), 400
+    # Проверка, что пользователь не является администратором, который выполняет запрос
+    current_user = User.query.get(int(get_jwt_identity()))
+    if current_user.id == user_id:
+        return jsonify({'message': 'Нельзя удалить самого себя'}), 400
     
     db.session.delete(user)
     db.session.commit()
     
-    return '', 204
+    return jsonify({'message': 'Пользователь успешно удален'}), 200

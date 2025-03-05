@@ -28,6 +28,7 @@ ENV/
 # Database
 *.db
 *.sqlite3
+instance/
 
 # IDE specific files
 .idea/
@@ -37,3 +38,23 @@ ENV/
 
 # Logs
 *.log
+
+# Frontend build artifacts
+frontend/
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Flask specific
+flask_session/
+.webassets-cache
+
+# Alembic migration data
+migrations/versions/__pycache__/
+migrations/__pycache__/
+migrations/script.py.mako
+
+# Temporary files
+.DS_Store
+Thumbs.db
