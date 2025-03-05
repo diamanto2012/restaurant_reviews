@@ -38,7 +38,7 @@ cd test2
 ```
 python -m venv venv
 source venv/bin/activate  # для Linux/Mac
-venv\Scripts\activate  # для Windows
+venv/Scripts/activate  # для Windows
 ```
 
 3. Установить зависимости:

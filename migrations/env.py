@@ -1,14 +1,14 @@
 from __future__ import with_statement
 
 from logging.config import fileConfig
+import os
+import sys
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
 
-import os
-import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from app import create_app, db
@@ -18,9 +18,20 @@ from app.models import User, Restaurant, Review
 # access to the values within the .ini file in use.
 config = context.config
 
+# Исправление пути к alembic.ini - ищем в корневой директории проекта
+root_dir = os.path.dirname(os.path.dirname(__file__))
+alembic_ini_path = os.path.join(root_dir, 'alembic.ini')
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-fileConfig(config.config_file_name)
+if os.path.exists(alembic_ini_path):
+    fileConfig(alembic_ini_path)
+else:
+    # Fallback на стандартное поведение, если файл не найден
+    try:
+        fileConfig(config.config_file_name)
+    except Exception as e:
+        print(f"Предупреждение: Не удалось загрузить конфигурацию логирования: {e}")
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -50,7 +61,10 @@ def run_migrations_offline():
     """
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=url, target_metadata=target_metadata, literal_binds=True
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
     )
 
     with context.begin_transaction():
